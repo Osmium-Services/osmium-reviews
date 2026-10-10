@@ -1,0 +1,1 @@
+ALTER TABLE {PREFIX}product_reviews ADD COLUMN verified_purchase TINYINT NOT NULL DEFAULT 0 COMMENT 'The reviewer email matched a paid order for the product when the review was sent' AFTER is_published;

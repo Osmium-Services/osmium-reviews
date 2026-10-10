@@ -31,10 +31,11 @@ final class ProductReviewTest extends DatabaseTestCase
 
     public function test_a_new_review_waits_for_approval(): void
     {
+        $before = $this->reviews->countPending();
         $id = $this->add($this->createTestProduct());
 
         $this->assertSame(0, (int) $this->reviews->get($id)['is_published']);
-        $this->assertSame(1, $this->reviews->countPending());
+        $this->assertSame($before + 1, $this->reviews->countPending());
     }
 
     public function test_the_public_sees_only_published_reviews_of_that_product(): void
@@ -53,13 +54,14 @@ final class ProductReviewTest extends DatabaseTestCase
     public function test_deleted_reviews_are_not_shown_or_counted_as_pending(): void
     {
         $product = $this->createTestProduct();
+        $before = $this->reviews->countPending();
         $published = $this->add($product, published: true);
         $pending = $this->add($product);
         $this->reviews->softDelete($published);
         $this->reviews->softDelete($pending);
 
         $this->assertSame([], $this->reviews->publishedForProduct($product));
-        $this->assertSame(0, $this->reviews->countPending());
+        $this->assertSame($before, $this->reviews->countPending());
     }
 
     public function test_a_review_can_be_published_and_unpublished(): void
@@ -160,5 +162,86 @@ final class ProductReviewTest extends DatabaseTestCase
     public function test_a_product_without_a_page_has_no_page_url(): void
     {
         $this->assertNull($this->reviews->productPageUrl($this->createTestProduct()));
+    }
+
+    // ── verified purchase ───────────────────────────────────────────────────
+
+    private function order(string $email, int $productId, string $status = 'paid', int $testPayment = 0): void
+    {
+        $prefix = $this->db->tablePrefix();
+        $this->db->prepare(
+            sql: "INSERT INTO {$prefix}shop_orders (order_ref, status, customer_name, customer_email, billing_address1, billing_city, billing_postcode, delivery_name, delivery_address1, delivery_city, delivery_postcode, delivery_zone, is_test_payment, created_at)
+                  VALUES (:ref, :status, 'Sam', :email, '1 St', 'Town', 'AB1 2CD', 'Sam', '1 St', 'Town', 'AB1 2CD', 'UK', :test, NOW())",
+            bindings: [':ref' => 'RV' . \substr(\uniqid(), -8), ':status' => $status, ':email' => $email, ':test' => $testPayment],
+        )->execute();
+        $orderId = (int) $this->db->lastInsertId();
+        $this->db->prepare(
+            sql: "INSERT INTO {$prefix}shop_order_items (order_id, product_id, product_ref, product_title, option_signature, quantity) VALUES (:order, :product, 'REF', 'Item', '', 1)",
+            bindings: [':order' => $orderId, ':product' => $productId],
+        )->execute();
+    }
+
+    public function test_an_email_with_a_paid_order_for_the_product_is_a_verified_purchase(): void
+    {
+        $product = $this->createTestProduct();
+        $this->order('buyer@example.com', $product);
+
+        $this->assertTrue($this->reviews->isVerifiedPurchase(email: 'buyer@example.com', productId: $product));
+    }
+
+    public function test_a_dispatched_order_also_counts(): void
+    {
+        $product = $this->createTestProduct();
+        $this->order('buyer@example.com', $product, 'dispatched');
+
+        $this->assertTrue($this->reviews->isVerifiedPurchase(email: 'buyer@example.com', productId: $product));
+    }
+
+    public function test_the_email_is_matched_ignoring_case(): void
+    {
+        $product = $this->createTestProduct();
+        $this->order('Buyer@Example.com', $product);
+
+        $this->assertTrue($this->reviews->isVerifiedPurchase(email: 'buyer@example.COM', productId: $product));
+    }
+
+    public function test_a_different_email_is_not_verified(): void
+    {
+        $product = $this->createTestProduct();
+        $this->order('buyer@example.com', $product);
+
+        $this->assertFalse($this->reviews->isVerifiedPurchase(email: 'someone@example.com', productId: $product));
+    }
+
+    public function test_a_different_product_is_not_verified(): void
+    {
+        $bought = $this->createTestProduct();
+        $other = $this->createTestProduct();
+        $this->order('buyer@example.com', $bought);
+
+        $this->assertFalse($this->reviews->isVerifiedPurchase(email: 'buyer@example.com', productId: $other));
+    }
+
+    public function test_orders_that_were_never_paid_or_were_refunded_or_test_payments_do_not_count(): void
+    {
+        $product = $this->createTestProduct();
+        foreach (['pending', 'failed', 'cancelled', 'refunded'] as $status) {
+            $this->order('buyer@example.com', $product, $status);
+        }
+        $this->order('buyer@example.com', $product, 'paid', testPayment: 1);
+
+        $this->assertFalse($this->reviews->isVerifiedPurchase(email: 'buyer@example.com', productId: $product));
+    }
+
+    public function test_the_verified_flag_is_stored_with_the_review(): void
+    {
+        $product = $this->createTestProduct();
+        $review = ['name' => 'Sam', 'contact' => 'sam@example.com', 'product_id' => $product, 'rating' => 4, 'content' => 'Good'];
+
+        $verified = $this->reviews->create(review: $review, ipAddress: null, verifiedPurchase: true);
+        $plain = $this->reviews->create(review: $review, ipAddress: null);
+
+        $this->assertSame(1, (int) $this->reviews->get($verified)['verified_purchase']);
+        $this->assertSame(0, (int) $this->reviews->get($plain)['verified_purchase']);
     }
 }

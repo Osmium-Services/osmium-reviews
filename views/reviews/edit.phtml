@@ -102,6 +102,11 @@ $productLabel = function (array $product): string {
                         <label class="form-check-label" for="is_published">Published</label>
                     </div>
                     <small class="text-muted">Unpublished reviews are hidden from the public</small>
+                    <?php if ($review['verified_purchase']): ?>
+                        <hr>
+                        <span class="badge bg-label-info">Verified purchase</span>
+                        <small class="text-muted d-block mt-1">The email matched a paid order for this product when the review was sent. It still needs your approval.</small>
+                    <?php endif; ?>
                     <?php if ($review['submittedFormatted']): ?>
                         <hr>
                         <small class="text-muted">Submitted: <?= \htmlspecialchars($review['submittedFormatted']) ?></small>

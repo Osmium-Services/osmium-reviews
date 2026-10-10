@@ -24,7 +24,7 @@ class ProductReview extends Model
      * @param array{name: string, contact: string, product_id: int, rating: int, content: string} $review
      * @return int The new review's id
      */
-    public function create(array $review, ?string $ipAddress, bool $published = false): int
+    public function create(array $review, ?string $ipAddress, bool $published = false, bool $verifiedPurchase = false): int
     {
         $this->run('review-insert.sql', [
             ':product_id' => $review['product_id'],
@@ -34,6 +34,7 @@ class ProductReview extends Model
             ':rating' => $review['rating'],
             ':content' => $review['content'],
             ':is_published' => (int) $published,
+            ':verified_purchase' => (int) $verifiedPurchase,
         ]);
 
         return (int) $this->database->lastInsertId();
@@ -125,6 +126,14 @@ class ProductReview extends Model
         $row = $this->one('review-count-by-ip.sql', [':ip_address' => $ipAddress, ':minutes' => $minutes]);
 
         return (int) ($row['count'] ?? 0);
+    }
+
+    /** Whether this email has a paid (or dispatched) order for the product: refunded, cancelled and test orders do not count */
+    public function isVerifiedPurchase(string $email, int $productId): bool
+    {
+        $row = $this->one('review-verified-purchase.sql', [':email' => $email, ':product_id' => $productId]);
+
+        return $row !== false;
     }
 
     public function productExists(int $productId): bool

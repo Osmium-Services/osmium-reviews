@@ -42,6 +42,21 @@ final class ReviewsHooksTest extends DatabaseTestCase
         $this->assertSame(4.0, $data['ratingAverage']);
     }
 
+    public function test_a_verified_purchase_review_reaches_the_product_page_as_verified(): void
+    {
+        $product = $this->createTestProduct();
+        (new ProductReview($this->db))->create(
+            review: ['name' => 'Sam', 'contact' => 'sam@example.com', 'product_id' => $product, 'rating' => 5, 'content' => 'Fine'],
+            ipAddress: null,
+            published: true,
+            verifiedPurchase: true,
+        );
+
+        $data = ReviewsHooks::productPageData(['productId' => $product, 'dataSource' => $this->db]);
+
+        $this->assertTrue($data['reviews'][0]['verified']);
+    }
+
     public function test_the_dashboard_card_counts_pending_reviews(): void
     {
         $product = $this->createTestProduct();

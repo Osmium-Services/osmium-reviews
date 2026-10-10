@@ -18,7 +18,7 @@ final class ReviewPageDataTest extends TestCase
 {
     private function row(int $id, int $rating, string $content = 'Fine'): array
     {
-        return ['id' => $id, 'name' => 'Sam', 'contact' => 'sam@example.com', 'rating' => $rating, 'content' => $content, 'created_at' => '2026-10-10 12:00:00'];
+        return ['id' => $id, 'name' => 'Sam', 'contact' => 'sam@example.com', 'rating' => $rating, 'content' => $content, 'created_at' => '2026-10-10 12:00:00', 'verified_purchase' => 0];
     }
 
     public function test_it_returns_the_reviews_a_count_and_an_average(): void
@@ -28,6 +28,17 @@ final class ReviewPageDataTest extends TestCase
         $this->assertCount(2, $data['reviews']);
         $this->assertSame(2, $data['reviewCount']);
         $this->assertSame(4.5, $data['ratingAverage']);
+    }
+
+    public function test_each_review_says_whether_it_is_a_verified_purchase(): void
+    {
+        $verified = $this->row(1, 5);
+        $verified['verified_purchase'] = 1;
+
+        $data = ReviewPageData::build(rows: [$verified, $this->row(2, 3)], notice: null);
+
+        $this->assertTrue($data['reviews'][0]['verified']);
+        $this->assertFalse($data['reviews'][1]['verified']);
     }
 
     public function test_a_reviewers_email_is_never_given_to_the_theme(): void

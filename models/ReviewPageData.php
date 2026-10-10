@@ -44,7 +44,7 @@ class ReviewPageData
         $session[self::NOTICE_KEY] = ['status' => $status, 'message' => $message];
     }
 
-    /** One review for the theme: the reviewer's email is never included */
+    /** One review for the theme: the reviewer's email is never included. verified means the email matched a paid order for the product */
     private static function review(array $row): array
     {
         return [
@@ -52,6 +52,7 @@ class ReviewPageData
             'name' => (string) $row['name'],
             'rating' => (int) $row['rating'],
             'content' => ReviewText::publicHtml($row['content']),
+            'verified' => (bool) ($row['verified_purchase'] ?? false),
             'created_at' => (string) $row['created_at'],
         ];
     }

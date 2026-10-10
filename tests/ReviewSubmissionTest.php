@@ -51,6 +51,47 @@ final class ReviewSubmissionTest extends DatabaseTestCase
         $this->assertSame('Panel 200W', $this->notified[0]['productName']);
     }
 
+    private function paidOrder(string $email, int $productId): void
+    {
+        $prefix = $this->db->tablePrefix();
+        $this->db->prepare(
+            sql: "INSERT INTO {$prefix}shop_orders (order_ref, status, customer_name, customer_email, billing_address1, billing_city, billing_postcode, delivery_name, delivery_address1, delivery_city, delivery_postcode, delivery_zone, created_at)
+                  VALUES (:ref, 'paid', 'Sam', :email, '1 St', 'Town', 'AB1 2CD', 'Sam', '1 St', 'Town', 'AB1 2CD', 'UK', NOW())",
+            bindings: [':ref' => 'RS' . \substr(\uniqid(), -8), ':email' => $email],
+        )->execute();
+        $orderId = (int) $this->db->lastInsertId();
+        $this->db->prepare(
+            sql: "INSERT INTO {$prefix}shop_order_items (order_id, product_id, product_ref, product_title, option_signature, quantity) VALUES (:order, :product, 'REF', 'Item', '', 1)",
+            bindings: [':order' => $orderId, ':product' => $productId],
+        )->execute();
+    }
+
+    private function storedReview(): array
+    {
+        return (new ProductReview($this->db))->listActive()[0];
+    }
+
+    public function test_a_review_from_a_paid_customer_is_marked_as_a_verified_purchase_but_still_waits_for_approval(): void
+    {
+        $product = $this->createTestProduct();
+        $this->paidOrder('sam@example.com', $product);
+
+        $this->submission()->submit(input: $this->input($product), ipAddress: '10.1.2.3');
+
+        $stored = $this->storedReview();
+        $this->assertSame(1, (int) $stored['verified_purchase']);
+        $this->assertSame(0, (int) $stored['is_published']);
+    }
+
+    public function test_a_review_from_someone_who_has_not_bought_it_is_not_verified(): void
+    {
+        $product = $this->createTestProduct();
+
+        $this->submission()->submit(input: $this->input($product), ipAddress: '10.1.2.4');
+
+        $this->assertSame(0, (int) $this->storedReview()['verified_purchase']);
+    }
+
     public function test_the_submitter_address_is_kept_for_rate_limiting(): void
     {
         $product = $this->createTestProduct();

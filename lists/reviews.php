@@ -29,13 +29,7 @@ return [
         'actions' => [
             ['label' => 'Edit', 'icon' => 'bx-edit-alt', 'url' => '{edit_url}'],
             [
-                'label' => 'Publish',
-                'icon' => 'bx-check',
-                'action' => 'publish',
-                'visible' => fn(array $row, array $context): bool => !$row['is_published'],
-            ],
-            [
-                'label' => 'Unpublish',
+                'label' => 'Unpublish', // Publishing is only from the edit page, so nobody approves a review without opening it
                 'icon' => 'bx-hide',
                 'action' => 'unpublish',
                 'visible' => fn(array $row, array $context): bool => (bool) $row['is_published'],

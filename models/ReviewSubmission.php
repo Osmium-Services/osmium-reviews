@@ -36,7 +36,8 @@ class ReviewSubmission
         $tooMany = $this->tooManyRecently($ipAddress);
         if ($tooMany) return $this->refused('You have sent several reviews recently. Please try again later');
 
-        $this->reviews->create(review: $review, ipAddress: $ipAddress);
+        $verified = $this->reviews->isVerifiedPurchase(email: $review['contact'], productId: $productId);
+        $this->reviews->create(review: $review, ipAddress: $ipAddress, verifiedPurchase: $verified);
         $this->tellTheTeam(review: $review);
 
         return ['ok' => true, 'error' => null, 'productUrl' => $this->reviews->productPageUrl($productId)];

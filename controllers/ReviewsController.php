@@ -16,7 +16,7 @@ use Osmium\Services\Reviews\Models\ReviewText;
  * Routes:
  *   - index()  → /admin/reviews/
  *   - edit()   → /admin/reviews/edit/?id=N   (no id: add a review)
- *   - action() → /admin/reviews/action/      (publish, unpublish, delete, restore, permanently_delete, purge_deleted)
+ *   - action() → /admin/reviews/action/      (unpublish, delete, restore, permanently_delete, purge_deleted)
  */
 class ReviewsController extends AdminController
 {
@@ -95,7 +95,6 @@ class ReviewsController extends AdminController
         $reviews = new ProductReview($this->osmium->dataSource);
 
         return match ($action) {
-            'publish' => $this->change(fn() => $reviews->setPublished(id: $id, published: true), $id, 'Published', $action),
             'unpublish' => $this->change(fn() => $reviews->setPublished(id: $id, published: false), $id, 'Unpublished', $action),
             'delete' => $this->change(fn() => $reviews->softDelete($id), $id, 'Deleted', $action),
             'restore' => $this->change(fn() => $reviews->restore($id), $id, 'Restored', $action),
@@ -248,7 +247,8 @@ class ReviewsController extends AdminController
 
         return $review + [
             'edit_url' => $this->getBasePath() . 'reviews/edit/?id=' . (int) $review['id'],
-            'statusBadge' => $review['is_published'] ? '<span class="badge bg-success">Published</span>' : '<span class="badge bg-warning">Pending</span>',
+            'statusBadge' => ($review['is_published'] ? '<span class="badge bg-success">Published</span>' : '<span class="badge bg-warning">Pending</span>')
+                . ($review['verified_purchase'] ? '<br><span class="badge bg-label-info mt-1">Verified purchase</span>' : ''),
             'productDisplay' => $productDisplay,
             'reviewerDisplay' => $reviewerDisplay,
             'ratingStars' => ReviewText::stars((int) $review['rating']),
@@ -281,6 +281,7 @@ class ReviewsController extends AdminController
             'rating' => (int) ($review['rating'] ?? 5),
             'content' => (string) ($review['content'] ?? ''),
             'is_published' => (int) ($review['is_published'] ?? 0),
+            'verified_purchase' => (int) ($review['verified_purchase'] ?? 0),
             'submittedFormatted' => $submitted ? \date('d M Y H:i', \strtotime((string) $submitted)) : null,
         ];
     }
