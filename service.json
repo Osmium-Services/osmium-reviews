@@ -40,7 +40,7 @@
                 },
                 {
                     "id": "reviews-settings",
-                    "label": "Review Settings",
+                    "label": "Reviews",
                     "icon": "bx bx-cog",
                     "route": "admin/settings/reviews",
                     "activePattern": "admin/settings/reviews",
