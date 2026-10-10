@@ -1,0 +1,41 @@
+<div class="d-flex justify-content-between align-items-center py-3 mb-4">
+    <h4 class="mb-0">
+        <span class="text-muted fw-light">Shop / Reviews /</span> Settings
+    </h4>
+    <button type="submit" form="settings-form" class="btn btn-primary">
+        <i class="bx bx-save me-1"></i> Save Settings
+    </button>
+</div>
+
+<?php if ($admin['settingsSaved']): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        Settings saved successfully!
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+
+<?php if ($admin['settingsError'] ?? false): ?>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <?= \htmlspecialchars($admin['settingsError']) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+
+<form method="POST" action="<?= $admin['basePath'] ?>settings/reviews/" id="settings-form">
+    <input type="hidden" name="token" value="<?= $template['formToken'] ?? '' ?>">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bx bx-envelope me-2"></i>Who is told about new reviews</h5>
+                </div>
+                <div class="card-body">
+                    <label for="recipients" class="form-label fw-semibold">Email addresses</label>
+                    <textarea class="form-control" id="recipients" name="recipients" rows="4"
+                        placeholder="one address per line"><?= \htmlspecialchars($admin['recipients']) ?></textarea>
+                    <div class="form-text">Each of these gets an email when a customer sends a review. Leave it empty to send none. New reviews always wait for approval under Shop &gt; Reviews.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

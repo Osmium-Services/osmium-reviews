@@ -1,0 +1,122 @@
+<?php
+$review = $admin['review'];
+$selectedProduct = null;
+foreach ($admin['products'] as $product) {
+    $isSelected = (int) $product['id'] === $review['product_id'];
+    if ($isSelected) $selectedProduct = $product;
+}
+$productLabel = function (array $product): string {
+    $reference = (string) ($product['reference'] ?? '');
+
+    return (string) $product['model_name'] . ($reference !== '' ? ' (' . $reference . ')' : '');
+};
+?>
+<div class="d-flex justify-content-between align-items-center py-3 mb-4">
+    <h4 class="mb-0">
+        <span class="text-muted fw-light">Shop / <a href="<?= $adminUrl('reviews/') ?>">Reviews</a> /</span>
+        <?= $admin['isNew'] ? 'Add Review' : 'Edit Review' ?>
+    </h4>
+    <a href="<?= $adminUrl('reviews/') ?>" class="btn btn-outline-secondary">
+        <i class="bx bx-arrow-back me-1"></i> Back to Reviews
+    </a>
+</div>
+
+<?php if ($admin['showSavedMessage']): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bx bx-check-circle me-1"></i> Review saved successfully.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
+
+<?php if ($admin['error']): ?>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bx bx-error-circle me-1"></i> <?= \htmlspecialchars($admin['error']) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
+
+<form method="POST" action="<?= $adminUrl('reviews/edit/' . ($admin['isNew'] ? '' : '?id=' . (int) $review['id'])) ?>" id="review-form">
+    <input type="hidden" name="token" value="<?= $template['formToken'] ?? '' ?>">
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0">Review</h5></div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="product_search" class="form-label">Product <span class="text-danger">*</span></label>
+                        <?php if ($admin['isNew']): ?>
+                            <input type="text" class="form-control" id="product_search" list="productList" placeholder="Type to search products..." required autocomplete="off"
+                                value="<?= $selectedProduct ? \htmlspecialchars($productLabel($selectedProduct)) : '' ?>">
+                            <datalist id="productList">
+                                <?php foreach ($admin['products'] as $product): ?>
+                                    <option data-id="<?= (int) $product['id'] ?>" value="<?= \htmlspecialchars($productLabel($product)) ?>"></option>
+                                <?php endforeach; ?>
+                            </datalist>
+                            <input type="hidden" name="product_id" id="product_id" value="<?= (int) $review['product_id'] ?: '' ?>" required>
+                        <?php else: ?>
+                            <input type="text" class="form-control" disabled value="<?= $selectedProduct ? \htmlspecialchars($productLabel($selectedProduct)) : 'Unknown' ?>">
+                            <input type="hidden" name="product_id" value="<?= (int) $review['product_id'] ?>">
+                        <?php endif; ?>
+                    </div>
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Review Text</label>
+                        <textarea class="form-control" id="content" name="content" rows="8" maxlength="2000"
+                            placeholder="Enter the review text..."><?= \htmlspecialchars($review['content']) ?></textarea>
+                        <small class="text-muted">Plain text. Line breaks are kept and nothing typed here can run as code.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0">Reviewer Details</h5></div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name" value="<?= \htmlspecialchars($review['name']) ?>" required maxlength="50">
+                    </div>
+                    <div class="mb-3">
+                        <label for="contact" class="form-label">Contact (Email)</label>
+                        <input type="text" class="form-control" id="contact" name="contact" value="<?= \htmlspecialchars($review['contact']) ?>" maxlength="255" placeholder="reviewer@example.com">
+                        <small class="text-muted">Never shown on the site</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Rating</label>
+                        <div id="ratingStars">
+                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <i class="bx bxs-star rating-star" data-value="<?= $i ?>" style="font-size: 1.75rem; cursor: pointer; color: <?= $i <= $review['rating'] ? '#ffc107' : '#e0e0e0' ?>;"></i>
+                            <?php endfor; ?>
+                        </div>
+                        <input type="hidden" id="rating" name="rating" value="<?= (int) $review['rating'] ?>">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0">Status</h5></div>
+                <div class="card-body">
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="is_published" name="is_published" <?= $review['is_published'] ? 'checked' : '' ?>>
+                        <label class="form-check-label" for="is_published">Published</label>
+                    </div>
+                    <small class="text-muted">Unpublished reviews are hidden from the public</small>
+                    <?php if ($review['submittedFormatted']): ?>
+                        <hr>
+                        <small class="text-muted">Submitted: <?= \htmlspecialchars($review['submittedFormatted']) ?></small>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bx bx-save me-1"></i> <?= $admin['isNew'] ? 'Add Review' : 'Save Changes' ?>
+                </button>
+                <a href="<?= $adminUrl('reviews/') ?>" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script src="/assets/services/osmium-reviews/reviews-edit.js<?= $adminAssetVersion('/assets/services/osmium-reviews/reviews-edit.js') ?>"></script>

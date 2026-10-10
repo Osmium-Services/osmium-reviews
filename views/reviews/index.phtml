@@ -1,0 +1,28 @@
+<?php
+
+use Osmium\Modules\Admin\Core\ListView;
+
+require_once 'app/modules/admin/core/ListView.php';
+
+$listContext = [
+    'adminUrl' => $adminUrl,
+    'isAdmin' => $admin['isAdmin'],
+    'editors' => [],
+    'avatarUrl' => $admin['avatarUrl'] ?? '',
+    'publishedCount' => $admin['publishedCount'],
+    'unpublishedCount' => $admin['unpublishedCount'],
+];
+?>
+<div class="d-flex justify-content-between align-items-center py-3 mb-4">
+    <h4 class="mb-0">
+        <span class="text-muted fw-light">Shop /</span> Reviews
+    </h4>
+    <a href="<?= $adminUrl('reviews/edit/') ?>" class="btn btn-primary">
+        <i class="bx bx-plus me-1"></i> Add Review
+    </a>
+</div>
+
+<?= ListView::render($admin['lists']['active'], $admin['reviews'], $listContext) ?>
+<?= ListView::render($admin['lists']['deleted'], $admin['deletedReviews'], $listContext) ?>
+
+<script src="/assets/admin/js/list-view.js<?= $adminAssetVersion('/assets/admin/js/list-view.js') ?>"></script>
