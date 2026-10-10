@@ -47,7 +47,8 @@ $tokenIssuedAt = $sg->get(type: 'SESSION', name: 'token_issued_at');
 $secondsSinceTokenIssued = $tokenIssuedAt ? (\time() - (int) $tokenIssuedAt) : 0;
 $submittedTooFast = $secondsSinceTokenIssued < 4;
 
-unset($_SESSION['token'], $_SESSION['token_issued_at']); // One token, one submission (SuperGlobal::delete() works on a copy and removes nothing)
+$sg->delete(type: 'SESSION', name: 'token'); // One token, one submission
+$sg->delete(type: 'SESSION', name: 'token_issued_at');
 
 $looksLikeABot = $botDetected || !$tokenIsValid || $submittedTooFast;
 if ($looksLikeABot) {
