@@ -14,6 +14,7 @@ class ReviewsMcp
 {
     private const LIST_LIMIT = 20;
     private const MAX_REVIEWER_LENGTH = 40;
+    private const SECOND_LEVEL_ENDINGS = ['co', 'com', 'org', 'ac', 'gov', 'me', 'ltd', 'plc', 'net', 'sch'];
     private const MAX_NAME_LENGTH = 80;
 
     /**
@@ -25,7 +26,7 @@ class ReviewsMcp
         return [
             [
                 'name' => 'reviews_waiting',
-                'description' => 'Product reviews awaiting approval: how many are waiting, the date of the oldest, how many are published with their average star rating, and up to 20 products with reviews waiting (how many, oldest date, average stars, how many are from verified purchasers). Also lists the 20 oldest waiting reviews by id with product, stars, date, verified purchase and the reviewer name and email masked (first and last letters only, for example G***n C*x and g*******x@g****.com). Review text and IP addresses are never returned. Read only: reviews can only be approved or rejected in the admin, using the review id.',
+                'description' => 'Product reviews awaiting approval: how many are waiting, the date of the oldest, how many are published with their average star rating, and up to 20 products with reviews waiting (how many, oldest date, average stars, how many are from verified purchasers). Also lists the 20 oldest waiting reviews by id with product, stars, date, verified purchase and the reviewer name and email masked (first and last letters only, for example G***n C*x and g*******x@g***l.com). Review text and IP addresses are never returned. Read only: reviews can only be approved or rejected in the admin, using the review id.',
                 'inputSchema' => ['type' => 'object', 'properties' => new \stdClass()],
                 'handler' => self::class . '::reviewsWaiting',
             ],
@@ -122,22 +123,35 @@ class ReviewsMcp
     }
 
     /**
-     * The part before the @ keeps first and last letters of each dotted piece, the domain name keeps only its first
-     * letter and the ending (.com) stays: "gavinpcox@gmail.com" becomes "g*******x@g****.com". Anything that is not
-     * shaped like an email address is not shown at all.
+     * The part before the @ keeps first and last letters of each dotted piece, every domain label before the ending
+     * does the same, and the ending stays whole (.com, or .co.uk): "gavinpcox@gmail.com" becomes "g*******x@g***l.com".
+     * Anything that is not shaped like an email address is not shown at all.
      */
     public static function maskEmail(string $email): ?string
     {
         $email = \trim($email);
         if ($email === '') return null;
 
-        $shaped = \preg_match('/^([^@\s]+)@([^@\s]+)\.([A-Za-z0-9-]{2,})$/u', $email, $parts) === 1;
+        $shaped = \preg_match('/^([^@\s]+)@([^@\s]+\.[A-Za-z0-9-]{2,})$/u', $email, $parts) === 1;
         if (!$shaped) return '(not an email address)';
 
         $local = \implode('.', \array_map(self::maskWord(...), \explode('.', $parts[1])));
-        $domain = \implode('.', \array_map(self::maskDomainPart(...), \explode('.', $parts[2])));
 
-        return "{$local}@{$domain}.{$parts[3]}";
+        return $local . '@' . self::maskDomain($parts[2]);
+    }
+
+    /** "mail.example.co.uk" becomes "m**l.e*****e.co.uk": the ending is kept, every label before it is masked */
+    private static function maskDomain(string $domain): string
+    {
+        $labels = \explode('.', $domain);
+        $endingLength = 1;
+        $isCountryCode = \mb_strlen($labels[\count($labels) - 1]) === 2;
+        $hasSecondLevel = \count($labels) >= 3 && \in_array(\strtolower($labels[\count($labels) - 2]), self::SECOND_LEVEL_ENDINGS, true);
+        if ($isCountryCode && $hasSecondLevel) $endingLength = 2;
+
+        $ending = \array_splice($labels, -$endingLength);
+
+        return \implode('.', \array_merge(\array_map(self::maskWord(...), $labels), $ending));
     }
 
     private static function maskWord(string $word): string
@@ -147,13 +161,6 @@ class ReviewsMcp
         if ($length === 2) return \mb_substr($word, 0, 1) . '*';
 
         return \mb_substr($word, 0, 1) . \str_repeat('*', $length - 2) . \mb_substr($word, -1);
-    }
-
-    private static function maskDomainPart(string $part): string
-    {
-        $length = \mb_strlen($part);
-
-        return $length <= 1 ? '*' : \mb_substr($part, 0, 1) . \str_repeat('*', $length - 1);
     }
 
     private static function date(mixed $value): ?string

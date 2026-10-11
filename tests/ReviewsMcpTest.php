@@ -95,8 +95,13 @@ final class ReviewsMcpTest extends TestCase
 
     public function test_emails_keep_first_and_last_letters_of_the_name_and_the_first_letter_of_the_domain(): void
     {
-        $this->assertSame('g*******x@g****.com', ReviewsMcp::maskEmail('gavinpcox@gmail.com'));
-        $this->assertSame('j**n.s***h@e******.c*.uk', ReviewsMcp::maskEmail('john.smith@example.co.uk'));
+        $this->assertSame('g*******x@g***l.com', ReviewsMcp::maskEmail('gavinpcox@gmail.com'));
+        $this->assertSame('j**n.s***h@e*****e.co.uk', ReviewsMcp::maskEmail('john.smith@example.co.uk'));
+        $this->assertSame('a*n@m**l.e*****e.com', ReviewsMcp::maskEmail('ann@mail.example.com'));
+        $this->assertSame('a*n@e*****e.org.uk', ReviewsMcp::maskEmail('ann@example.org.uk'));
+        $this->assertSame('a*n@c*.uk', ReviewsMcp::maskEmail('ann@co.uk'));
+        $this->assertSame('x*y@e*****e.com.au', ReviewsMcp::maskEmail('xzy@example.com.au'));
+        $this->assertSame('a*n@e*****e.CO.UK', ReviewsMcp::maskEmail('ann@example.CO.UK'));
         $this->assertNull(ReviewsMcp::maskEmail(''));
     }
 
@@ -115,7 +120,7 @@ final class ReviewsMcpTest extends TestCase
 
         $this->assertSame([
             'id' => 12, 'product' => 'Seed Globex Panel 400W', 'rating' => 4, 'submitted' => '2026-10-03', 'verified_purchase' => true,
-            'reviewer' => 'S*m S***h', 'email' => 's*m@e******.com',
+            'reviewer' => 'S*m S***h', 'email' => 's*m@e*****e.com',
         ], $shape['oldest_waiting_reviews'][0]);
         foreach (['Sam', 'Smith', 'sam@example', '203.0.113.9', '07700900123'] as $secret) {
             $this->assertStringNotContainsString($secret, $json);
