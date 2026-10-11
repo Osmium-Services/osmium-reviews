@@ -1,7 +1,7 @@
 {
     "id": "osmium-reviews",
     "name": "Osmium Reviews",
-    "version": "0.3.1",
+    "version": "0.3.2",
     "description": "Customer product reviews: a submit endpoint with spam protection, moderation in admin, and review data for the product page",
     "category": "shop",
     "author": {

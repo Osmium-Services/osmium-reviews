@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Osmium\Services\Reviews\Models;
 
+use Osmium\Core\Library\Masking;
+
 /**
  * Osmium Reviews' tool for the /mcp endpoint, offered through core's `mcp.tools` hook: one read-only summary of
  * the reviews waiting for approval. Reviewer names and emails are visitor-supplied and personal, so they only
@@ -13,8 +15,6 @@ namespace Osmium\Services\Reviews\Models;
 class ReviewsMcp
 {
     private const LIST_LIMIT = 20;
-    private const MAX_REVIEWER_LENGTH = 40;
-    private const SECOND_LEVEL_ENDINGS = ['co', 'com', 'org', 'ac', 'gov', 'me', 'ltd', 'plc', 'net', 'sch'];
     private const MAX_NAME_LENGTH = 80;
 
     /**
@@ -98,8 +98,8 @@ class ReviewsMcp
             'rating' => (int) $row['rating'],
             'submitted' => self::date($row['submitted_at'] ?? null),
             'verified_purchase' => (int) $row['verified_purchase'] === 1,
-            'reviewer' => self::maskName((string) ($row['name'] ?? '')),
-            'email' => self::maskEmail((string) ($row['contact'] ?? '')),
+            'reviewer' => Masking::name((string) ($row['name'] ?? '')),
+            'email' => Masking::email((string) ($row['contact'] ?? '')),
         ];
     }
 
@@ -109,58 +109,6 @@ class ReviewsMcp
         $gone = $row['model_name'] === null || $row['product_deleted_at'] !== null;
 
         return $gone ? '(deleted product)' : self::clean(\trim((string) ($row['brand_name'] ?? '') . ' ' . (string) $row['model_name']));
-    }
-
-    /** Every word keeps only its first and last letter: "Gavin Cox" becomes "G***n C*x". Null when there is no name. */
-    public static function maskName(string $name): ?string
-    {
-        $clean = \trim((string) \preg_replace('/\s+/u', ' ', (string) \preg_replace('/[\p{C}]+/u', ' ', $name)));
-        if ($clean === '') return null;
-
-        $words = \explode(' ', \mb_substr($clean, 0, self::MAX_REVIEWER_LENGTH));
-
-        return \implode(' ', \array_map(self::maskWord(...), $words));
-    }
-
-    /**
-     * The part before the @ keeps first and last letters of each dotted piece, every domain label before the ending
-     * does the same, and the ending stays whole (.com, or .co.uk): "gavinpcox@gmail.com" becomes "g*******x@g***l.com".
-     * Anything that is not shaped like an email address is not shown at all.
-     */
-    public static function maskEmail(string $email): ?string
-    {
-        $email = \trim($email);
-        if ($email === '') return null;
-
-        $shaped = \preg_match('/^([^@\s]+)@([^@\s]+\.[A-Za-z0-9-]{2,})$/u', $email, $parts) === 1;
-        if (!$shaped) return '(not an email address)';
-
-        $local = \implode('.', \array_map(self::maskWord(...), \explode('.', $parts[1])));
-
-        return $local . '@' . self::maskDomain($parts[2]);
-    }
-
-    /** "mail.example.co.uk" becomes "m**l.e*****e.co.uk": the ending is kept, every label before it is masked */
-    private static function maskDomain(string $domain): string
-    {
-        $labels = \explode('.', $domain);
-        $endingLength = 1;
-        $isCountryCode = \mb_strlen($labels[\count($labels) - 1]) === 2;
-        $hasSecondLevel = \count($labels) >= 3 && \in_array(\strtolower($labels[\count($labels) - 2]), self::SECOND_LEVEL_ENDINGS, true);
-        if ($isCountryCode && $hasSecondLevel) $endingLength = 2;
-
-        $ending = \array_splice($labels, -$endingLength);
-
-        return \implode('.', \array_merge(\array_map(self::maskWord(...), $labels), $ending));
-    }
-
-    private static function maskWord(string $word): string
-    {
-        $length = \mb_strlen($word);
-        if ($length <= 1) return '*';
-        if ($length === 2) return \mb_substr($word, 0, 1) . '*';
-
-        return \mb_substr($word, 0, 1) . \str_repeat('*', $length - 2) . \mb_substr($word, -1);
     }
 
     private static function date(mixed $value): ?string
