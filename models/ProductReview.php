@@ -103,6 +103,24 @@ class ProductReview extends Model
         return $this->many('review-list-pending.sql', [':limit' => $limit]);
     }
 
+    /** @return array<string, mixed> waiting, oldest_waiting, published and average_rating over live reviews */
+    public function totals(): array
+    {
+        return $this->one('review-totals.sql', []) ?: [];
+    }
+
+    /** @return array<int, array<string, mixed>> Products with reviews waiting: how many, the oldest, average rating and verified count */
+    public function waitingByProduct(): array
+    {
+        return $this->many('review-waiting-by-product.sql', []);
+    }
+
+    /** @return array<int, array<string, mixed>> The oldest waiting reviews first, with their product */
+    public function waitingList(int $limit): array
+    {
+        return $this->many('review-waiting-list.sql', [':limit' => $limit]);
+    }
+
     /** @return array<int, array<string, mixed>> Every live review with its product, newest first */
     public function listActive(): array
     {

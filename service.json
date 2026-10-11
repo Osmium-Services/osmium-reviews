@@ -1,7 +1,7 @@
 {
     "id": "osmium-reviews",
     "name": "Osmium Reviews",
-    "version": "0.2.2",
+    "version": "0.3.0",
     "description": "Customer product reviews: a submit endpoint with spam protection, moderation in admin, and review data for the product page",
     "category": "shop",
     "author": {
@@ -21,6 +21,9 @@
     "hooks": {
         "product.page.data": [
             "Osmium\\Services\\Reviews\\Models\\ReviewsHooks::productPageData"
+        ],
+        "mcp.tools": [
+            "Osmium\\Services\\Reviews\\Models\\ReviewsMcp::tools"
         ],
         "dashboard.widgets": [
             "Osmium\\Services\\Reviews\\Models\\ReviewsHooks::dashboard"
