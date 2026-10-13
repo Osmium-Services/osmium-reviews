@@ -24,7 +24,7 @@ class ReviewsController extends AdminController
 
     public function index(): void
     {
-        require_once 'app/modules/admin/core/ListView.php';
+        require_once 'app/admin/core/ListView.php';
 
         $reviews = new ProductReview($this->osmium->dataSource);
         $active = $reviews->listActive();
