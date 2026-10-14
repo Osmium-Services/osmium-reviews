@@ -42,11 +42,12 @@ class ReviewsController extends AdminController
 
     public function edit(): void
     {
-        $id = (int) $this->osmium->getStashedParam(key: 'id', default: 0); // Core moves query params out of $_GET
+        $stashedId = (int) $this->osmium->getStashedParam(key: 'id', default: 0); // Core moves query params out of $_GET
         $this->osmium->clearStashedQuerystring();
 
         $reviews = new ProductReview($this->osmium->dataSource);
         $isPost = $_SERVER['REQUEST_METHOD'] === 'POST';
+        $id = $isPost ? Input::post()->int(key: 'id') : $stashedId; // The form posts to the clean address, so its id is in the body
         $error = $isPost ? $this->save(reviews: $reviews, id: $id) : null;
 
         $stored = $id ? $reviews->get($id) : null;

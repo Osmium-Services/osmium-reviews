@@ -35,8 +35,10 @@ $productLabel = function (array $product): string {
     </div>
 <?php endif; ?>
 
-<form method="POST" action="<?= $adminUrl('reviews/edit/' . ($admin['isNew'] ? '' : '?id=' . (int) $review['id'])) ?>" id="review-form">
+<?php // Post to the clean address: core redirects any request with a query string, which would drop the form. The id travels in the body. ?>
+<form method="POST" action="<?= $adminUrl('reviews/edit/') ?>" id="review-form">
     <input type="hidden" name="token" value="<?= $template['formToken'] ?? '' ?>">
+    <input type="hidden" name="id" value="<?= $admin['isNew'] ? 0 : (int) $review['id'] ?>">
 
     <div class="row">
         <div class="col-md-8">
