@@ -44,4 +44,26 @@ final class ReviewMailTest extends TestCase
         $this->assertStringNotContainsString('<b>', $html);
         $this->assertStringContainsString('&lt;b&gt;', $html);
     }
+
+    public function test_the_html_body_is_styled_with_the_site_logo(): void
+    {
+        $html = ReviewMail::html(review: $this->review(), productName: 'Panel', brand: [
+            'siteName' => 'Pest & Co',
+            'logoUrl' => 'https://example.com/logo-dark.png',
+        ]);
+
+        $this->assertStringContainsString('src="https://example.com/logo-dark.png"', $html);
+        $this->assertStringNotContainsString('admin', $html);
+        $this->assertStringContainsString('Pest &amp; Co', $html);
+        $this->assertStringContainsString('4 out of 5', $html);
+        $this->assertStringContainsString("Line one<br>\nLine two", $html);
+    }
+
+    public function test_the_html_body_falls_back_to_the_site_name_without_a_logo(): void
+    {
+        $html = ReviewMail::html(review: $this->review(), productName: 'Panel', brand: ['siteName' => 'Pest']);
+
+        $this->assertStringNotContainsString('<img', $html);
+        $this->assertStringContainsString('>Pest</span>', $html);
+    }
 }

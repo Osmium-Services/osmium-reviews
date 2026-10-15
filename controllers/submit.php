@@ -1,5 +1,6 @@
 <?php
 
+use Osmium\Core\Library\BrandLogo;
 use Osmium\Core\Library\MailerFactory;
 use Osmium\Core\Library\ServiceHooks;
 use Osmium\Core\Library\ServiceLoader;
@@ -75,7 +76,10 @@ $notify = function (array $review, string $productName): void {
     $result = MailerFactory::make($this->osmium->config)->send(
         recipients: $recipients,
         subject: ReviewMail::SUBJECT,
-        htmlBody: ReviewMail::html(review: $review, productName: $productName),
+        htmlBody: ReviewMail::html(review: $review, productName: $productName, brand: [
+            'siteName' => (string) $this->osmium->config->site->name,
+            'logoUrl' => BrandLogo::emailUrl($this->osmium->config->site->FQDN),
+        ]),
     );
     if (!$result['success']) \error_log('Review email failed: ' . $result['error']);
 };
