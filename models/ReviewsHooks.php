@@ -44,11 +44,11 @@ class ReviewsHooks
     /**
      * email.samples: the new-review notification, for the admin's Email test tool.
      *
-     * @return array{id: string, label: string, handler: string}
+     * @return array{id: string, label: string, group: string, handler: string}
      */
     public static function emailSamples(array $payload): array
     {
-        return ['id' => 'reviews.new_review', 'label' => 'New review notification (sample data)', 'handler' => self::class . '::sendSampleEmail'];
+        return ['id' => 'reviews.new_review', 'label' => 'New review notification (sample data)', 'group' => 'Osmium Reviews', 'handler' => self::class . '::sendSampleEmail'];
     }
 
     /**

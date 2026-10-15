@@ -75,6 +75,7 @@ final class ReviewsHooksTest extends DatabaseTestCase
         $sample = ReviewsHooks::emailSamples(['osmium' => (object) []]);
 
         $this->assertSame('reviews.new_review', $sample['id']);
+        $this->assertSame('Osmium Reviews', $sample['group']);
         $this->assertTrue(\is_callable(\explode('::', $sample['handler'])));
     }
 
