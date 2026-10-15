@@ -11,6 +11,19 @@ class ReviewMail
 {
     public const SUBJECT = 'A product review was added';
 
+    /**
+     * A made-up review and product for the admin's sample email: nothing real is read or sent.
+     *
+     * @return array{review: array{name: string, contact: string, rating: int, content: string}, productName: string}
+     */
+    public static function sample(): array
+    {
+        return [
+            'review' => ['name' => 'Alex Sample', 'contact' => 'alex@example.com', 'rating' => 4, 'content' => "Arrived quickly and works as described.\nWould happily buy again."],
+            'productName' => 'Example Product Name',
+        ];
+    }
+
     /** @param array{name: string, contact: string, rating: int, content: string} $review */
     public static function text(array $review, string $productName): string
     {

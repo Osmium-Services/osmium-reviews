@@ -69,4 +69,22 @@ final class ReviewsHooksTest extends DatabaseTestCase
 
         $this->assertSame($before + 1, $widget['count']);
     }
+
+    public function test_the_new_review_email_is_offered_as_a_sample_to_the_email_test_tool(): void
+    {
+        $sample = ReviewsHooks::emailSamples(['osmium' => (object) []]);
+
+        $this->assertSame('reviews.new_review', $sample['id']);
+        $this->assertTrue(\is_callable(\explode('::', $sample['handler'])));
+    }
+
+    public function test_the_brand_is_the_sites_name_and_email_logo(): void
+    {
+        $config = (object) ['site' => (object) ['name' => 'Pest', 'FQDN' => 'https://example.com']];
+
+        $brand = ReviewsHooks::brand($config);
+
+        $this->assertSame('Pest', $brand['siteName']);
+        $this->assertArrayHasKey('logoUrl', $brand);
+    }
 }

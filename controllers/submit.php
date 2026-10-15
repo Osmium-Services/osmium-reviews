@@ -1,6 +1,5 @@
 <?php
 
-use Osmium\Core\Library\BrandLogo;
 use Osmium\Core\Library\MailerFactory;
 use Osmium\Core\Library\ServiceHooks;
 use Osmium\Core\Library\ServiceLoader;
@@ -10,6 +9,7 @@ use Osmium\Services\Reviews\Models\ReviewMail;
 use Osmium\Services\Reviews\Models\ReviewPageData;
 use Osmium\Services\Reviews\Models\ReviewProtection;
 use Osmium\Services\Reviews\Models\ReviewsConfig;
+use Osmium\Services\Reviews\Models\ReviewsHooks;
 use Osmium\Services\Reviews\Models\ReviewSubmission;
 
 /**
@@ -76,10 +76,7 @@ $notify = function (array $review, string $productName): void {
     $result = MailerFactory::make($this->osmium->config)->send(
         recipients: $recipients,
         subject: ReviewMail::SUBJECT,
-        htmlBody: ReviewMail::html(review: $review, productName: $productName, brand: [
-            'siteName' => (string) $this->osmium->config->site->name,
-            'logoUrl' => BrandLogo::emailUrl($this->osmium->config->site->FQDN),
-        ]),
+        htmlBody: ReviewMail::html(review: $review, productName: $productName, brand: ReviewsHooks::brand($this->osmium->config)),
     );
     if (!$result['success']) \error_log('Review email failed: ' . $result['error']);
 };

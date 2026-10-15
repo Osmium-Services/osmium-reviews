@@ -66,4 +66,14 @@ final class ReviewMailTest extends TestCase
         $this->assertStringNotContainsString('<img', $html);
         $this->assertStringContainsString('>Pest</span>', $html);
     }
+
+    public function test_the_sample_is_made_up_and_builds_a_complete_email(): void
+    {
+        $sample = ReviewMail::sample();
+        $html = ReviewMail::html(review: $sample['review'], productName: $sample['productName']);
+
+        $this->assertStringContainsString('example.com', $sample['review']['contact']);
+        $this->assertStringContainsString('Example Product Name', $html);
+        $this->assertStringContainsString('4 out of 5', $html);
+    }
 }

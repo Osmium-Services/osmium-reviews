@@ -1,7 +1,7 @@
 {
     "id": "osmium-reviews",
     "name": "Osmium Reviews",
-    "version": "0.3.6",
+    "version": "0.3.7",
     "description": "Customer product reviews: a submit endpoint with spam protection, moderation in admin, and review data for the product page",
     "category": "shop",
     "author": {
@@ -27,6 +27,9 @@
         ],
         "dashboard.widgets": [
             "Osmium\\Services\\Reviews\\Models\\ReviewsHooks::dashboard"
+        ],
+        "email.samples": [
+            "Osmium\\Services\\Reviews\\Models\\ReviewsHooks::emailSamples"
         ]
     },
     "admin": {
