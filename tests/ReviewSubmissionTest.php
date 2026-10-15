@@ -118,7 +118,7 @@ final class ReviewSubmissionTest extends DatabaseTestCase
         $result = $this->submission()->submit(input: $this->input(999999999), ipAddress: '10.4.4.4');
 
         $this->assertFalse($result['ok']);
-        $this->assertSame('That product could not be found', $result['error']);
+        $this->assertSame(ReviewSubmission::TECHNICAL_PROBLEM, $result['error']); // Says nothing about why
         $this->assertSame([], $this->notified);
     }
 
@@ -133,7 +133,7 @@ final class ReviewSubmissionTest extends DatabaseTestCase
         $result = $submission->submit(input: $this->input($product), ipAddress: '10.5.5.5');
 
         $this->assertFalse($result['ok']);
-        $this->assertStringContainsString('try again later', (string) $result['error']);
+        $this->assertSame(ReviewSubmission::TECHNICAL_PROBLEM, $result['error']); // Says nothing about the limit
         $this->assertTrue($submission->submit(input: $this->input($product), ipAddress: '10.5.5.6')['ok']);
     }
 

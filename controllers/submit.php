@@ -62,7 +62,7 @@ $protectionFailed = !ReviewProtection::passed($protectionAnswers);
 
 $looksLikeABot = $botDetected || !$tokenIsValid || $submittedTooFast || $protectionFailed;
 if ($looksLikeABot) {
-    $notice('Your review could not be sent. Please try again');
+    $notice(ReviewSubmission::TECHNICAL_PROBLEM); // Never say which check failed
     $back($productUrl);
 }
 

@@ -11,6 +11,9 @@ namespace Osmium\Services\Reviews\Models;
  */
 class ReviewSubmission
 {
+    /** What the visitor is told when a review is refused for a reason that is none of their business (a bot check, the hourly limit) */
+    public const TECHNICAL_PROBLEM = 'There was a technical problem sending your review. Please try again later';
+
     private const MAX_PER_HOUR = 3;
     private const WINDOW_MINUTES = 60;
 
@@ -31,10 +34,10 @@ class ReviewSubmission
         $productId = $review['product_id'];
 
         $productMissing = !$this->reviews->productExists($productId);
-        if ($productMissing) return $this->refused('That product could not be found');
+        if ($productMissing) return $this->refused(self::TECHNICAL_PROBLEM);
 
         $tooMany = $this->tooManyRecently($ipAddress);
-        if ($tooMany) return $this->refused('You have sent several reviews recently. Please try again later');
+        if ($tooMany) return $this->refused(self::TECHNICAL_PROBLEM);
 
         $verified = $this->reviews->isVerifiedPurchase(email: $review['contact'], productId: $productId);
         $this->reviews->create(review: $review, ipAddress: $ipAddress, verifiedPurchase: $verified);
