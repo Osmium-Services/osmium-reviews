@@ -1,15 +1,19 @@
 <?php
 
 use Osmium\Core\Library\MailerFactory;
+use Osmium\Core\Library\ServiceHooks;
+use Osmium\Core\Library\ServiceLoader;
+use Osmium\Core\Models\ServiceModel;
 use Osmium\Services\Reviews\Models\ProductReview;
 use Osmium\Services\Reviews\Models\ReviewMail;
 use Osmium\Services\Reviews\Models\ReviewPageData;
+use Osmium\Services\Reviews\Models\ReviewProtection;
 use Osmium\Services\Reviews\Models\ReviewsConfig;
 use Osmium\Services\Reviews\Models\ReviewSubmission;
 
 /**
  * Review submission endpoint (POST /api/reviews). Fields: name, email, pid, rating, message, plus the
- * form's token and the zip honeypot. The visitor is always sent back to the product page (or the shop),
+ * form's token and the zip honeypot, and the answer of any bot protection installed (form.verify). The visitor is always sent back to the product page (or the shop),
  * with a one-time reviewNotice for the theme to show.
  */
 
@@ -50,7 +54,12 @@ $submittedTooFast = $secondsSinceTokenIssued < 4;
 $sg->delete(type: 'SESSION', name: 'token'); // One token, one submission
 $sg->delete(type: 'SESSION', name: 'token_issued_at');
 
-$looksLikeABot = $botDetected || !$tokenIsValid || $submittedTooFast;
+// Any installed bot protection answers the form.verify hook; this service never names one
+$protectionAnswers = (new ServiceHooks(new ServiceLoader(new ServiceModel($this->osmium->dataSource))))
+    ->collect('form.verify', ['form' => 'reviews', 'post' => $_POST, 'dataSource' => $this->osmium->dataSource]);
+$protectionFailed = !ReviewProtection::passed($protectionAnswers);
+
+$looksLikeABot = $botDetected || !$tokenIsValid || $submittedTooFast || $protectionFailed;
 if ($looksLikeABot) {
     $notice('Your review could not be sent. Please try again');
     $back($productUrl);
