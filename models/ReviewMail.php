@@ -35,6 +35,19 @@ class ReviewMail
     }
 
     /**
+     * The contact as a mailto link only when it is a plain email address; anything else (a phone number, or
+     * an address with "?bcc=" or similar tacked on) is shown as text so it can never become a link.
+     */
+    private static function contactHtml(string $contact): string
+    {
+        $text = \htmlspecialchars($contact, ENT_QUOTES);
+        $isEmail = \filter_var($contact, FILTER_VALIDATE_EMAIL) !== false;
+        if (!$isEmail) return $text;
+
+        return '<a href="mailto:' . $text . '" style="color: #166534;">' . $text . '</a>';
+    }
+
+    /**
      * The same email in the site's email styling: logo header, green accents, the review set out in full. It carries no link to the admin: the team signs in to approve.
      *
      * @param array{name: string, contact: string, rating: int, content: string} $review
@@ -54,7 +67,7 @@ class ReviewMail
             : '<img src="' . $e($logoUrl) . '" alt="' . $siteName . '" style="max-width: 220px; height: auto;">';
 
         $message = \nl2br($e($review['content']), false);
-        $reviewer = $e($review['name']) . ' (<a href="mailto:' . $e($review['contact']) . '" style="color: #166534;">' . $e($review['contact']) . '</a>)';
+        $reviewer = $e($review['name']) . ' (' . self::contactHtml($review['contact']) . ')';
 
         return <<<HTML
 <!DOCTYPE html>

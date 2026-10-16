@@ -45,6 +45,23 @@ final class ReviewMailTest extends TestCase
         $this->assertStringContainsString('&lt;b&gt;', $html);
     }
 
+    public function test_a_plain_email_contact_is_a_mailto_link(): void
+    {
+        $html = ReviewMail::html(review: $this->review(), productName: 'Panel');
+
+        $this->assertStringContainsString('<a href="mailto:sam@example.com"', $html);
+    }
+
+    public function test_a_contact_that_is_not_a_plain_email_is_text_and_never_a_link(): void
+    {
+        foreach (['sam@example.com?bcc=evil@example.net', 'sam@example.com" onclick="x', '07123 456789', 'javascript:alert(1)'] as $contact) {
+            $html = ReviewMail::html(review: ['contact' => $contact] + $this->review(), productName: 'Panel');
+
+            $this->assertStringNotContainsString('mailto:', $html, $contact);
+            $this->assertStringNotContainsString('<a href', $html, $contact);
+        }
+    }
+
     public function test_the_html_body_is_styled_with_the_site_logo(): void
     {
         $html = ReviewMail::html(review: $this->review(), productName: 'Panel', brand: [
