@@ -6,7 +6,7 @@ namespace Tests\Services\Reviews;
 
 use Osmium\Services\Reviews\Models\ProductReview;
 use Osmium\Services\Reviews\Models\ReviewsHooks;
-use Tests\Integration\DatabaseTestCase;
+use Tests\Helpers\ShopDatabaseTestCase;
 
 require_once __DIR__ . '/../models/ReviewText.php';
 require_once __DIR__ . '/../models/ReviewPageData.php';
@@ -17,7 +17,7 @@ require_once __DIR__ . '/../models/ReviewsHooks.php';
 /**
  * The core hooks wired to real stored reviews.
  */
-final class ReviewsHooksTest extends DatabaseTestCase
+final class ReviewsHooksTest extends ShopDatabaseTestCase
 {
     private function review(int $productId, int $rating, bool $published): void
     {

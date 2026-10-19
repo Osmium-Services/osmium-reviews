@@ -6,7 +6,7 @@ namespace Tests\Services\Reviews;
 
 use Osmium\Services\Reviews\Models\ProductReview;
 use Osmium\Services\Reviews\Models\ReviewSubmission;
-use Tests\Integration\DatabaseTestCase;
+use Tests\Helpers\ShopDatabaseTestCase;
 
 require_once __DIR__ . '/../models/ReviewRules.php';
 require_once __DIR__ . '/../models/ProductReview.php';
@@ -15,7 +15,7 @@ require_once __DIR__ . '/../models/ReviewSubmission.php';
 /**
  * A visitor sending a review: checked, rate limited, saved unpublished, and the team told.
  */
-final class ReviewSubmissionTest extends DatabaseTestCase
+final class ReviewSubmissionTest extends ShopDatabaseTestCase
 {
     /** @var array<int, array{review: array, productName: string}> */
     private array $notified = [];

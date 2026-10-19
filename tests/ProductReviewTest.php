@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Tests\Services\Reviews;
 
 use Osmium\Services\Reviews\Models\ProductReview;
-use Tests\Integration\DatabaseTestCase;
+use Tests\Helpers\ShopDatabaseTestCase;
 
 require_once __DIR__ . '/../models/ProductReview.php';
 
 /**
  * The stored reviews: what the public sees, what waits for approval, and the bin.
  */
-final class ProductReviewTest extends DatabaseTestCase
+final class ProductReviewTest extends ShopDatabaseTestCase
 {
     private ProductReview $reviews;
 

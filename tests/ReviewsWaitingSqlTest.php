@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Services\Reviews;
 
 use Osmium\Services\Reviews\Models\ProductReview;
-use Tests\Integration\DatabaseTestCase;
+use Tests\Helpers\ShopDatabaseTestCase;
 
 require_once __DIR__ . '/../models/ProductReview.php';
 
@@ -13,7 +13,7 @@ require_once __DIR__ . '/../models/ProductReview.php';
  * The SQL behind reviews_waiting, run against real rows: unpublished and not deleted reviews wait, they are
  * grouped by product, and the list is oldest first.
  */
-class ReviewsWaitingSqlTest extends DatabaseTestCase
+class ReviewsWaitingSqlTest extends ShopDatabaseTestCase
 {
     private ProductReview $reviews;
     private string $runTag;
