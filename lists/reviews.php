@@ -9,6 +9,26 @@ use Osmium\Modules\Admin\Core\ListView;
  * productDisplay...) are prepared by ReviewsController::formatReview() and formatDeletedReview().
  */
 return [
+    'recent' => [
+        'id' => 'reviews-recent',
+        'title' => 'Recent Changes',
+        'noun' => ['review', 'reviews'],
+        'icon' => 'bx-time-five',
+        'endpoint' => 'reviews/action/',
+        'datatable' => false,
+        'collapsible' => ['label' => 'Recent Changes ({count})'],
+        'hideWhenEmpty' => false,
+        'columns' => [
+            ['key' => 'reviewerName', 'label' => 'Reviewer', 'type' => 'raw', 'strong' => true, 'fill' => true],
+            ['key' => 'productTitle', 'label' => 'Product', 'type' => 'raw'],
+            ['key' => 'ratingStars', 'label' => 'Rating', 'type' => 'raw', 'nowrap' => true],
+            ['key' => 'updatedDate', 'label' => 'Updated', 'type' => 'text', 'small' => true, 'nowrap' => true],
+        ],
+        'actions' => [
+            ['label' => 'Edit', 'icon' => 'bx-edit-alt', 'url' => '{edit_url}'],
+        ],
+    ],
+
     'active' => [
         'id' => 'reviews',
         'title' => 'Review Management',
@@ -49,6 +69,7 @@ return [
         'title' => 'Deleted Reviews',
         'noun' => ['item', 'items'],
         'endpoint' => 'reviews/action/',
+        'hideWhenEmpty' => false,
         'headerButton' => [
             'label' => 'Purge All',
             'icon' => 'bx-trash',

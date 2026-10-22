@@ -127,6 +127,12 @@ class ProductReview extends Model
         return $this->many('review-list-active.sql', []);
     }
 
+    /** @return array<int, array<string, mixed>> Submitted or changed in the last 24 hours, newest first, capped at 10 */
+    public function listRecent(): array
+    {
+        return $this->many('review-list-recent.sql', []);
+    }
+
     /** @return array<int, array<string, mixed>> */
     public function listDeleted(): array
     {

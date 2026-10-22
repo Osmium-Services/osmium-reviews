@@ -32,6 +32,7 @@ class ReviewsController extends AdminController
         $this->data['admin']['isAdmin'] = $this->isAdmin();
         $this->data['admin']['lists'] = require __DIR__ . '/../lists/reviews.php';
         $this->data['admin']['reviews'] = \array_map($this->formatReview(...), $active);
+        $this->data['admin']['recentReviews'] = \array_map($this->formatRecentReview(...), $reviews->listRecent());
         $this->data['admin']['deletedReviews'] = \array_map($this->formatDeletedReview(...), $reviews->listDeleted());
         $this->data['admin']['publishedCount'] = $publishedCount;
         $this->data['admin']['unpublishedCount'] = \count($active) - $publishedCount;
@@ -255,6 +256,20 @@ class ReviewsController extends AdminController
             'contentPreview' => ReviewText::preview($review['content']),
             'submittedDate' => \date('d M Y', $submittedTimestamp),
             'submittedTimestamp' => $submittedTimestamp,
+        ];
+    }
+
+    private function formatRecentReview(array $review): array
+    {
+        $changed = $review['updated_at'] ?? $review['submitted_at'];
+
+        return [
+            'id' => $review['id'],
+            'edit_url' => $this->getBasePath() . 'reviews/edit/?id=' . (int) $review['id'],
+            'reviewerName' => \htmlspecialchars((string) $review['name']),
+            'productTitle' => \htmlspecialchars((string) ($review['product_title'] ?? 'Unknown')),
+            'ratingStars' => ReviewText::stars((int) $review['rating']),
+            'updatedDate' => \date('j M Y, g:ia', \strtotime((string) $changed)),
         ];
     }
 
