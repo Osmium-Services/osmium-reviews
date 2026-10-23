@@ -13,7 +13,7 @@ $productLabel = function (array $product): string {
 ?>
 <div class="d-flex justify-content-between align-items-center py-3 mb-4">
     <h4 class="mb-0">
-        <span class="text-muted fw-light">Shop / <a href="<?= $adminUrl('reviews/') ?>">Reviews</a> /</span>
+        <span class="text-muted fw-light"><a href="<?= $adminUrl('reviews/') ?>">Product Reviews</a> /</span>
         <?= $admin['isNew'] ? 'Add Review' : 'Edit Review' ?>
     </h4>
     <a href="<?= $adminUrl('reviews/') ?>" class="btn btn-outline-secondary">

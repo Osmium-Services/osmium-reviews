@@ -47,7 +47,7 @@
                 },
                 {
                     "id": "reviews-settings",
-                    "label": "Reviews",
+                    "label": "Osmium Reviews",
                     "icon": "bx bx-cog",
                     "route": "admin/settings/reviews",
                     "activePattern": "admin/settings/reviews",
