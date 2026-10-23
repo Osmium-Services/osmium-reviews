@@ -8,24 +8,25 @@ use Osmium\Modules\Admin\Core\ListView;
  * Reviews lists, rendered by Osmium\Modules\Admin\Core\ListView. Row fields (statusBadge, ratingStars,
  * productDisplay...) are prepared by ReviewsController::formatReview() and formatDeletedReview().
  */
+require_once 'app/core/admin/services/ChangedByCell.php';
+
 return [
     'recent' => [
         'id' => 'reviews-recent',
         'title' => 'Recent Changes',
         'noun' => ['review', 'reviews'],
         'icon' => 'bx-time-five',
+        'rowClass' => static fn(array $row): string => empty($row['deleted_at']) ? '' : 'table-danger',
         'endpoint' => 'reviews/action/',
         'datatable' => false,
         'collapsible' => ['label' => 'Recent Changes ({count})'],
         'hideWhenEmpty' => false,
         'columns' => [
+            ['key' => 'changed_by', 'label' => '', 'type' => 'html', 'sortable' => false, 'render' => fn(array $row, array $context): string => \Osmium\Modules\Admin\Services\ChangedByCell::html($row, (string)($context['avatarUrl'] ?? ''))],
             ['key' => 'reviewerName', 'label' => 'Reviewer', 'type' => 'raw', 'strong' => true, 'fill' => true],
             ['key' => 'productTitle', 'label' => 'Product', 'type' => 'raw'],
             ['key' => 'ratingStars', 'label' => 'Rating', 'type' => 'raw', 'nowrap' => true],
             ['key' => 'updatedDate', 'label' => 'Updated', 'type' => 'text', 'small' => true, 'nowrap' => true],
-        ],
-        'actions' => [
-            ['label' => 'Edit', 'icon' => 'bx-edit-alt', 'url' => '{edit_url}'],
         ],
     ],
 
@@ -79,6 +80,7 @@ return [
             'visible' => fn(array $rows, array $context): bool => (bool) $context['isAdmin'],
         ],
         'columns' => [
+            ['key' => 'changed_by', 'label' => '', 'type' => 'html', 'sortable' => false, 'render' => fn(array $row, array $context): string => \Osmium\Modules\Admin\Services\ChangedByCell::html($row, (string)($context['avatarUrl'] ?? ''))],
             ['key' => 'reviewerName', 'label' => 'Reviewer', 'type' => 'raw', 'strong' => true, 'fill' => true],
             ['key' => 'productTitle', 'label' => 'Product', 'type' => 'raw'],
             ['key' => 'ratingStars', 'label' => 'Rating', 'type' => 'raw', 'nowrap' => true],

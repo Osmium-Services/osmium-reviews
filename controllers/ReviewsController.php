@@ -261,15 +261,18 @@ class ReviewsController extends AdminController
 
     private function formatRecentReview(array $review): array
     {
-        $changed = $review['updated_at'] ?? $review['submitted_at'];
+        $changed = \max($review['updated_at'] ?? '', $review['deleted_at'] ?? '', $review['submitted_at']);
 
         return [
             'id' => $review['id'],
+            'deleted_at' => $review['deleted_at'] ?? null,
             'edit_url' => $this->getBasePath() . 'reviews/edit/?id=' . (int) $review['id'],
             'reviewerName' => \htmlspecialchars((string) $review['name']),
             'productTitle' => \htmlspecialchars((string) ($review['product_title'] ?? 'Unknown')),
             'ratingStars' => ReviewText::stars((int) $review['rating']),
             'updatedDate' => \date('j M Y, g:ia', \strtotime((string) $changed)),
+            'changed_by' => $review['changed_by'] ?? null,
+            'changed_by_avatar' => $review['changed_by_avatar'] ?? null,
         ];
     }
 
@@ -281,6 +284,8 @@ class ReviewsController extends AdminController
             'productTitle' => \htmlspecialchars((string) ($review['product_title'] ?? 'Unknown')),
             'ratingStars' => ReviewText::stars((int) $review['rating']),
             'deletedDate' => \date('d M Y', \strtotime((string) $review['deleted_at'])),
+            'changed_by' => $review['changed_by'] ?? null,
+            'changed_by_avatar' => $review['changed_by_avatar'] ?? null,
         ];
     }
 
