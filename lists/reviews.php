@@ -18,7 +18,6 @@ return [
         'icon' => 'bx-time-five',
         'rowClass' => static fn(array $row): string => empty($row['deleted_at']) ? '' : 'table-danger',
         'endpoint' => 'reviews/action/',
-        'datatable' => false,
         'collapsible' => ['label' => 'Recent Changes ({count})'],
         'hideWhenEmpty' => false,
         'columns' => [
@@ -37,7 +36,7 @@ return [
         'endpoint' => 'reviews/action/',
         'emptyText' => 'No reviews yet. They appear here, waiting for approval, once customers send them.',
         'order' => [5, 'desc'],
-        'badgeLabel' => fn(int $count, array $context): string => $context['publishedCount'] . ' published'
+        'subtitle' => fn(array $context): string => $context['publishedCount'] . ' published'
             . ($context['unpublishedCount'] > 0 ? ', ' . $context['unpublishedCount'] . ' pending' : ''),
         'columns' => [
             ['key' => 'statusBadge', 'label' => 'Status', 'type' => 'raw', 'sortKey' => 'is_published'],
