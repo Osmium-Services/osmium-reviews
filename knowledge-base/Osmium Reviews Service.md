@@ -1,7 +1,7 @@
 # Osmium Reviews service
 
 Product reviews moved out of core into the service `osmium-reviews` (repo `Osmium-Services/osmium-reviews`, extracted
-2026-10-10, v0.6.3<!--v:osmium-reviews-->, category shop). Core lost the reviews admin, the submit handler and its two result pages, the
+2026-10-10, v0.6.4<!--v:osmium-reviews-->, category shop). Core lost the reviews admin, the submit handler and its two result pages, the
 `productreviews` table and the review join on the product page. See [[Core and Services]].
 
 ## What it does
