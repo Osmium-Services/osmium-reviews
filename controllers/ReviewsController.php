@@ -15,7 +15,8 @@ use Osmium\Services\Reviews\Models\ReviewText;
  *
  * Routes:
  *   - index()  → /admin/reviews/
- *   - edit()   → /admin/reviews/edit/?id=N   (no id: add a review)
+ *   - add()    → /admin/reviews/add/
+ *   - edit()   → /admin/reviews/edit/?id=N
  *   - action() → /admin/reviews/action/      (unpublish, delete, restore, permanently_delete, purge_deleted)
  */
 class ReviewsController extends AdminController
@@ -40,6 +41,18 @@ class ReviewsController extends AdminController
         $this->setView('reviews/index.phtml');
     }
 
+    public function add(): void
+    {
+        $this->osmium->clearStashedQuerystring();
+
+        $reviews = new ProductReview($this->osmium->dataSource);
+        $isPost = $_SERVER['REQUEST_METHOD'] === 'POST';
+        $error = $isPost ? $this->save(reviews: $reviews, id: 0) : null;
+
+        $this->prepareFormData(reviews: $reviews, stored: null, id: 0, error: $error);
+        $this->setView('reviews/add.phtml');
+    }
+
     public function edit(): void
     {
         $stashedId = (int) $this->osmium->getStashedParam(key: 'id', default: 0); // Core moves query params out of $_GET
@@ -51,16 +64,19 @@ class ReviewsController extends AdminController
         $error = $isPost ? $this->save(reviews: $reviews, id: $id) : null;
 
         $stored = $id ? $reviews->get($id) : null;
-        $isMissing = $id && (!$stored || $stored['deleted_at'] !== null);
+        $isMissing = !$stored || $stored['deleted_at'] !== null;
         if ($isMissing) $this->redirect('reviews/');
 
-        $this->data['admin']['review'] = $this->formatForEdit($isPost && $error ? $this->submittedFields($id) : $stored);
+        $this->prepareFormData(reviews: $reviews, stored: $stored, id: $id, error: $error);
+        $this->setView('reviews/edit.phtml');
+    }
+
+    private function prepareFormData(ProductReview $reviews, ?array $stored, int $id, ?string $error): void
+    {
+        $this->data['admin']['review'] = $this->formatForEdit($error ? $this->submittedFields($id) : $stored);
         $this->data['admin']['products'] = $reviews->listProducts();
-        $this->data['admin']['isNew'] = !$id;
         $this->data['admin']['error'] = $error;
         $this->data['admin']['showSavedMessage'] = $this->takeSavedFlag();
-
-        $this->setView('reviews/edit.phtml');
     }
 
     public function action()

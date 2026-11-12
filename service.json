@@ -62,6 +62,12 @@
                 "method": "index",
                 "title": "Reviews"
             },
+            "admin/reviews/add": {
+                "controller": "controllers/ReviewsController.php",
+                "class": "Osmium\\Services\\Reviews\\Controllers\\ReviewsController",
+                "method": "add",
+                "title": "Add Review"
+            },
             "admin/reviews/edit": {
                 "controller": "controllers/ReviewsController.php",
                 "class": "Osmium\\Services\\Reviews\\Controllers\\ReviewsController",
