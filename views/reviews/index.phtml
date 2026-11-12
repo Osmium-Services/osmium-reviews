@@ -16,9 +16,16 @@ $listContext = [
     <h4 class="mb-0">
         Product Reviews
     </h4>
-    <a href="<?= $adminUrl('reviews/add/') ?>" class="btn btn-primary">
-        <i class="bx bx-plus me-1"></i> Add Review
-    </a>
+    <div>
+        <?php if ($admin['isAdmin'] ?? false): ?>
+        <a href="<?= $admin['basePath'] ?>settings/reviews/" class="btn btn-outline-secondary me-2">
+            <i class="bx bx-cog me-1"></i> Settings
+        </a>
+        <?php endif; ?>
+        <a href="<?= $adminUrl('reviews/add/') ?>" class="btn btn-primary">
+            <i class="bx bx-plus me-1"></i> Add Review
+        </a>
+    </div>
 </div>
 
 <?= ListView::render($admin['lists']['active'], $admin['reviews'], $listContext) ?>
