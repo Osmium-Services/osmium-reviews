@@ -1,7 +1,7 @@
 {
     "id": "osmium-reviews",
     "name": "Osmium Reviews",
-    "version": "0.6.5",
+    "version": "0.7.0",
     "description": "Customer product reviews: a submit endpoint with spam protection, moderation in admin, and review data for the product page",
     "category": "shop",
     "author": {
@@ -40,7 +40,9 @@
                     "label": "Reviews",
                     "icon": "bx bx-star",
                     "color": "#d4a017",
-                    "placement": "top",
+                    "placement": "group",
+                    "group": "shop",
+                    "order": 110,
                     "route": "admin/reviews",
                     "activePattern": "admin/reviews*",
                     "role": null
