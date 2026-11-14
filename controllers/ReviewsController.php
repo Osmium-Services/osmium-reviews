@@ -7,6 +7,7 @@ namespace Osmium\Services\Reviews\Controllers;
 use Osmium\Core\Library\Input;
 use Osmium\Modules\Admin\Core\AdminController;
 use Osmium\Services\Reviews\Models\ProductReview;
+use Osmium\Services\Reviews\Models\ReviewPhotos;
 use Osmium\Services\Reviews\Models\ReviewRules;
 use Osmium\Services\Reviews\Models\ReviewText;
 
@@ -163,9 +164,14 @@ class ReviewsController extends AdminController
 
         $fields = $this->submittedFields($id);
         $problem = $this->problem($fields);
+        $stored = $id ? $reviews->get($id) : null;
+        $kept = ReviewPhotos::kept($fields['photos'], $stored['photos'] ?? null);
+        $uploads = ReviewPhotos::uploads($_FILES['new_photos'] ?? null);
+        $problem ??= ReviewPhotos::problem(\count($kept), $uploads);
         if ($problem !== null) return $problem;
 
         $savedId = $this->store(reviews: $reviews, id: $id, fields: $fields);
+        $this->savePhotos(reviews: $reviews, id: $savedId, stored: $stored['photos'] ?? null, kept: $kept, uploads: $uploads);
         $_SESSION['reviews_saved'] = true;
         $this->redirect('reviews/edit/?id=' . $savedId);
 
@@ -186,6 +192,22 @@ class ReviewsController extends AdminController
         $this->admin->model->changelog->log(description: "Created review by {$name}", recordType: self::RECORD_TYPE, recordId: $newId);
 
         return $newId;
+    }
+
+    private function savePhotos(ProductReview $reviews, int $id, ?string $stored, array $kept, array $uploads): void
+    {
+        $unchanged = $uploads === [] && \count($kept) === \count(ReviewText::photoPaths($stored));
+        if ($unchanged) return;
+
+        try {
+            $photos = ReviewPhotos::apply(reviewId: $id, stored: $stored, kept: $kept, uploads: $uploads, documentRoot: $_SERVER['DOCUMENT_ROOT']);
+        } catch (\RuntimeException | \InvalidArgumentException $e) {
+            $_SESSION['reviews_saved'] = true;
+            $this->redirect('reviews/edit/?id=' . $id); // The review is saved; only the photos failed
+        }
+
+        $reviews->setPhotos($id, $photos);
+        $this->admin->model->changelog->log(description: 'Changed the photos of review #' . $id, recordType: self::RECORD_TYPE, recordId: $id);
     }
 
     private function asNewReview(array $fields): array
@@ -212,6 +234,7 @@ class ReviewsController extends AdminController
             'rating' => $rating,
             'content' => $input->nullableString(key: 'content'),
             'is_published' => (int) $input->has(key: 'is_published'),
+            'photos' => \array_map('strval', (array) ($_POST['keep_photos'] ?? [])),
         ];
     }
 
@@ -316,6 +339,7 @@ class ReviewsController extends AdminController
             'contact' => (string) ($review['contact'] ?? ''),
             'rating' => (int) ($review['rating'] ?? 5),
             'content' => (string) ($review['content'] ?? ''),
+            'photos' => \is_array($review['photos'] ?? null) ? $review['photos'] : ReviewText::photoPaths($review['photos'] ?? null),
             'is_published' => (int) ($review['is_published'] ?? 0),
             'verified_purchase' => (int) ($review['verified_purchase'] ?? 0),
             'submittedFormatted' => $submitted ? \date('d M Y H:i', \strtotime((string) $submitted)) : null,

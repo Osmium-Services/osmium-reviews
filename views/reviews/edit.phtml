@@ -36,7 +36,7 @@ $productLabel = function (array $product): string {
 <?php endif; ?>
 
 <?php // Post to the clean address: core redirects any request with a query string, which would drop the form. The id travels in the body. ?>
-<form method="POST" action="<?= $adminUrl('reviews/edit/') ?>" id="review-form">
+<form method="POST" action="<?= $adminUrl('reviews/edit/') ?>" id="review-form" enctype="multipart/form-data">
     <input type="hidden" name="token" value="<?= $template['formToken'] ?? '' ?>">
     <input type="hidden" name="id" value="<?= (int) $review['id'] ?>">
 
@@ -55,6 +55,27 @@ $productLabel = function (array $product): string {
                         <textarea class="form-control" id="content" name="content" rows="8" maxlength="2000"
                             placeholder="Enter the review text..."><?= \htmlspecialchars($review['content']) ?></textarea>
                         <small class="text-muted">Plain text. Line breaks are kept and nothing typed here can run as code.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Photos</label>
+                        <div class="review-photo-zone" id="review-photo-zone" data-max="<?= \Osmium\Services\Reviews\Models\ReviewPhotos::MAX_PHOTOS ?>">
+                            <div class="review-photo-empty">
+                                <i class="bx bx-cloud-upload"></i>
+                                <p class="mb-1 mt-2 fw-medium">Drag &amp; drop or click to add photos</p>
+                                <small class="text-muted">JPG, PNG or WebP, up to 10MB each, resized to 1200px wide, up to <?= \Osmium\Services\Reviews\Models\ReviewPhotos::MAX_PHOTOS ?> photos</small>
+                            </div>
+                        </div>
+                        <div class="review-photo-grid" id="review-photo-grid">
+                            <?php foreach ($review['photos'] as $photo): ?>
+                                <div class="review-photo-item" data-kept="1">
+                                    <img src="<?= \htmlspecialchars($photo) ?>" alt="Review photo">
+                                    <input type="hidden" name="keep_photos[]" value="<?= \htmlspecialchars($photo) ?>">
+                                    <button type="button" class="btn btn-sm btn-icon btn-danger review-photo-remove" title="Remove photo"><i class="bx bx-trash"></i></button>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <input type="file" class="d-none" id="new_photos" name="new_photos[]" multiple accept="image/jpeg,image/png,image/webp">
+                        <small class="text-muted">Saved when you press Save Changes (optional). Shown below the review text.</small>
                     </div>
                 </div>
             </div>
@@ -115,4 +136,6 @@ $productLabel = function (array $product): string {
     </div>
 </form>
 
+<link rel="stylesheet" href="/assets/services/osmium-reviews/reviews-photos.css<?= $adminAssetVersion('/assets/services/osmium-reviews/reviews-photos.css') ?>">
+<script src="/assets/services/osmium-reviews/reviews-photos.js<?= $adminAssetVersion('/assets/services/osmium-reviews/reviews-photos.js') ?>"></script>
 <script src="/assets/services/osmium-reviews/reviews-edit.js<?= $adminAssetVersion('/assets/services/osmium-reviews/reviews-edit.js') ?>"></script>

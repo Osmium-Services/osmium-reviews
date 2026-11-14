@@ -27,6 +27,24 @@ class ReviewText
         return $html;
     }
 
+    /**
+     * Photo paths stored one per line. Only image files under /assets/images/ are kept, so a stored value can never
+     * point the theme at a script or another site.
+     *
+     * @return string[]
+     */
+    public static function photoPaths(?string $photos): array
+    {
+        $paths = [];
+        foreach (\preg_split('/\R/', (string) $photos) ?: [] as $line) {
+            $line = \trim($line);
+            $isImage = \preg_match('#^/assets/images/[A-Za-z0-9/_.-]+\.(jpe?g|png|webp|avif|gif)$#i', $line) === 1;
+            if ($isImage && !\str_contains($line, '..')) $paths[] = $line;
+        }
+
+        return $paths;
+    }
+
     /** @param int[] $ratings @return float|null The mean to one decimal place, or null when there are none */
     public static function average(array $ratings): ?float
     {

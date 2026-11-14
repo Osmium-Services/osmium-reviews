@@ -12,7 +12,7 @@ class ReviewPageData
     private const NOTICE_KEY = 'review_notice';
 
     /**
-     * @param array<int, array{id: int, name: string, rating: int, content: ?string, created_at: string}> $rows Published reviews
+     * @param array<int, array{id: int, name: string, rating: int, content: ?string, photos?: ?string, created_at: string}> $rows Published reviews
      * @param array{status: string, message: string}|null $notice What happened to this visitor's own submission, if anything
      * @return array{reviews: array, reviewCount: int, ratingAverage: ?float, reviewNotice: ?array}
      */
@@ -52,6 +52,7 @@ class ReviewPageData
             'name' => (string) $row['name'],
             'rating' => (int) $row['rating'],
             'content' => ReviewText::publicHtml($row['content']),
+            'photos' => ReviewText::photoPaths($row['photos'] ?? null),
             'verified' => (bool) ($row['verified_purchase'] ?? false),
             'created_at' => (string) $row['created_at'],
         ];

@@ -62,6 +62,12 @@ class ProductReview extends Model
         ]);
     }
 
+    /** @param string|null $photos Photo paths one per line, as ReviewPhotos::apply() returns them */
+    public function setPhotos(int $id, ?string $photos): void
+    {
+        $this->run('review-set-photos.sql', [':id' => $id, ':photos' => $photos]);
+    }
+
     public function setPublished(int $id, bool $published): void
     {
         $this->run('review-set-published.sql', [':id' => $id, ':is_published' => (int) $published]);
