@@ -39,11 +39,11 @@ return [
         'subtitle' => fn(array $context): string => $context['publishedCount'] . ' published'
             . ($context['unpublishedCount'] > 0 ? ', ' . $context['unpublishedCount'] . ' pending' : ''),
         'columns' => [
-            ['key' => 'statusBadge', 'label' => 'Status', 'type' => 'raw', 'sortKey' => 'is_published'],
             ['key' => 'productDisplay', 'label' => 'Product', 'type' => 'raw', 'sortKey' => 'product_title'],
             ['key' => 'reviewerDisplay', 'label' => 'Reviewer', 'type' => 'raw', 'sortKey' => 'name'],
             ['key' => 'ratingStars', 'label' => 'Rating', 'type' => 'raw', 'nowrap' => true, 'sortKey' => 'rating'],
             ['key' => 'contentPreview', 'label' => 'Review', 'type' => 'text', 'small' => true, 'fill' => true],
+            ['key' => 'statusBadge', 'label' => 'Status', 'type' => 'raw', 'sortKey' => 'is_published'],
             ['key' => 'submittedDate', 'label' => 'Submitted', 'type' => 'text', 'small' => true, 'nowrap' => true, 'sortKey' => 'submittedTimestamp'],
         ],
         'actions' => [
