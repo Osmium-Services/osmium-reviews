@@ -1,6 +1,7 @@
 ---
 title: Approve and manage product reviews
 tags: reviews, product reviews, moderation, approve, unpublish, rating, photos, notification
+page: admin/reviews, admin/reviews/add, admin/reviews/edit*, admin/settings/reviews
 ---
 
 **Product Reviews** is where customer reviews of your products are managed. New reviews always wait for your approval before they show.
